@@ -31,6 +31,21 @@ router.post("/reports", async (req, res) => {
   res.json({ ok: true });
 });
 router.use("/admin", admin);
+router.get("/admin/members", async (req, res) => {
+  const members = await User.find({})
+    .select("_id alias role suspended")
+    .sort({ alias: 1 })
+    .limit(100)
+    .lean();
+  res.json({
+    members: members.map((user) => ({
+      id: String(user._id),
+      alias: user.alias,
+      role: user.role,
+      suspended: user.suspended,
+    })),
+  });
+});
 router.get("/admin/reports", async (req, res) => {
   const reports = await Report.find({ expiresAt: { $gt: new Date() } })
     .sort({ createdAt: -1 })
@@ -72,6 +87,9 @@ router.post("/admin/members/:id/suspend", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) fail("Member not found.", 404);
   if (String(req.user._id) === req.params.id)
     fail("You cannot suspend yourself.");
+  const target = await User.findById(req.params.id).select("role").lean();
+  if (!target || target.role === "admin")
+    fail("Member not found or is an administrator.", 404);
   await withUserLock(req.params.id, async () => {
     const user = await User.findOneAndUpdate(
       { _id: req.params.id, role: { $ne: "admin" } },

@@ -99,10 +99,19 @@ router.post("/", async (req, res) => {
     !points[direction].includes(meetingPoint) ||
     ![5, 10, 15].includes(windowMinutes) ||
     !string(departureAt, 20, 35) ||
-    !/Z$|[+-]\d{2}:\d{2}$/.test(departureAt)
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      departureAt,
+    )
   )
     fail("Choose a valid direction, meeting point, departure and time window.");
   const departure = new Date(departureAt);
+  const calendarDay = departureAt.slice(0, 10);
+  const parsedDay = new Date(`${calendarDay}T00:00:00Z`);
+  if (
+    !Number.isFinite(parsedDay.getTime()) ||
+    parsedDay.toISOString().slice(0, 10) !== calendarDay
+  )
+    fail("Invalid departure date.");
   if (
     !Number.isFinite(departure.getTime()) ||
     departure.getTime() < Date.now() + 300000 ||

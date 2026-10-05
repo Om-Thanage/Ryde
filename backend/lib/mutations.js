@@ -1,10 +1,16 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const { User } = require("../models");
 // ponytail: one API process. Scale-out requires distributed locks or transactions.
 // Await the actual handler, including DB cleanup, even if the client disconnects.
 const locks = new Map();
 async function withUserLock(id, task) {
-  const key = String(id);
+  const raw = String(id);
+  const suffix = raw.startsWith("group:") ? raw.slice(6) : raw;
+  const key = mongoose.isValidObjectId(suffix)
+    ? (raw.startsWith("group:") ? "group:" : "") +
+      new mongoose.Types.ObjectId(suffix).toString()
+    : raw;
   const previous = locks.get(key) || Promise.resolve();
   let release;
   const current = new Promise((resolve) => {

@@ -18,6 +18,8 @@ router.post("/register", authLimit, async (req, res) => {
   const { alias, email, password, inviteCode } = req.body;
   if (
     !s.string(alias, 2, 32) ||
+    alias.trim().length < 2 ||
+    /(?:\+?\d[\s().-]*){10,}/.test(alias) ||
     !/^[\p{L}\p{N} ._-]+$/u.test(alias) ||
     !s.string(email, 3, 254) ||
     !/^\S+@\S+\.\S+$/.test(email) ||
