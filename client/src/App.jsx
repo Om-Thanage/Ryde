@@ -14,7 +14,7 @@ function RouteIllustration({ compact = false }) {
       <div className="route-art-top">
         <span className="eyebrow">ONE COMMUNITY. TWO STOPS.</span>
         <span className="route-arrow" aria-hidden="true">
-          ↗
+          →
         </span>
       </div>
       <div className="route-stop stop-home">
@@ -33,9 +33,7 @@ function RouteIllustration({ compact = false }) {
           </p>
         </div>
       </div>
-      <div className="route-line" aria-hidden="true">
-        <span>together</span>
-      </div>
+      <div className="route-line" aria-hidden="true" />
       <div className="route-stop stop-station">
         <span className="stop-dot" />
         <div>
@@ -80,7 +78,7 @@ function Landing({ onLogin }) {
             Share an auto. Keep your privacy.
           </p>
           <a href="#community" className="button primary">
-            Find your people <span>↗</span>
+            Find your people <span>→</span>
           </a>
           <div className="hero-footnote">
             <span aria-hidden="true">↔</span> TenX Raymond & Thane West Station
@@ -202,7 +200,7 @@ export default function App() {
             aria-label="TenX Together home"
           >
             <span className="brand-mark" aria-hidden="true">
-              t<span>↗</span>
+              t<span>→</span>
             </span>
             <span>
               tenx<span className="brand-second">together</span>
@@ -236,7 +234,7 @@ export default function App() {
             <>
               <span className="header-route">THANE WEST ⇄ TENX RAYMOND</span>
               <a className="button secondary small" href="#community">
-                Join your neighbours ↗
+                Join your neighbours →
               </a>
             </>
           )}
