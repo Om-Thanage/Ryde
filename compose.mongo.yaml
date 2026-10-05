@@ -5,10 +5,13 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?Set Mongo username in .env}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?Set Mongo password in .env}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:?Set application database username}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?Set application database password}
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
+      - ./deploy/mongo-init.js:/docker-entrypoint-initdb.d/app.js:ro
     healthcheck:
       test: [CMD, mongosh, --quiet, --eval, "quit(db.adminCommand({ping:1}).ok ? 0 : 1)"]
       interval: 10s
@@ -19,7 +22,7 @@ services:
       options: {max-size: "10m", max-file: "3"}
   api:
     environment:
-      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/tenx?authSource=admin
+      MONGO_URI: mongodb://${MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD}@mongo:27017/tenx?authSource=tenx
     depends_on:
       mongo: {condition: service_healthy}
 volumes:
