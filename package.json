@@ -1,0 +1,20 @@
+{
+  "name": "tenx-together",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup-local.mjs",
+    "dev": "bash scripts/dev.sh",
+    "test:e2e": "playwright test",
+    "test:backend": "node scripts/test-backend.cjs",
+    "check": "npm --prefix client run lint && npm --prefix client run build && npm run test:backend && npm run test:e2e",
+    "build:cloud": "node scripts/build-cloud.mjs"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0"
+  }
+}

@@ -1,0 +1,35 @@
+name: Validate community app
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:8.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ci_test_admin
+          MONGO_INITDB_ROOT_PASSWORD: ci_disposable_test_database_only
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)'"
+          --health-interval 10s --health-timeout 5s --health-retries 12
+    env:
+      TEST_MONGO_URI: mongodb://ci_test_admin:ci_disposable_test_database_only@127.0.0.1:27017/tenx_ci_test?authSource=admin
+      E2E_MONGO_URI: mongodb://ci_test_admin:ci_disposable_test_database_only@127.0.0.1:27017/tenx_ci_browser_test?authSource=admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            client/package-lock.json
+      - run: npm ci
+      - run: npm --prefix backend ci
+      - run: npm --prefix client ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
