@@ -235,7 +235,12 @@ export default function Room({ id, onBack, onChanged, isAdmin }) {
             <p>You no longer have access to this conversation.</p>
           ) : (
             <>
-              <div className="messages" aria-label="Group messages">
+              <div
+                className="messages"
+                role="log"
+                aria-live="polite"
+                aria-label="Group messages"
+              >
                 {!messages.length && (
                   <div className="chat-empty">
                     <span aria-hidden="true">↔</span>

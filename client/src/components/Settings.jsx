@@ -6,13 +6,25 @@ export default function Settings({ user, onDeleted, onOpen }) {
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [reports, setReports] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [memberPage, setMemberPage] = useState(1);
+  const [hasMoreMembers, setHasMoreMembers] = useState(false);
+  const [memberLoading, setMemberLoading] = useState(false);
   const [invite, setInvite] = useState(null);
   const [loading, setLoading] = useState(user.role === "admin");
   useEffect(() => {
     if (user.role !== "admin") return;
     const controller = new AbortController();
-    api("/admin/reports", { signal: controller.signal })
-      .then((data) => setReports(data.reports))
+    Promise.all([
+      api("/admin/reports", { signal: controller.signal }),
+      api("/admin/members?page=1", { signal: controller.signal }),
+    ])
+      .then(([reportData, memberData]) => {
+        setReports(reportData.reports);
+        setMembers(memberData.members);
+        setMemberPage(memberData.page);
+        setHasMoreMembers(memberData.hasMore);
+      })
       .catch((err) => {
         if (err.name !== "AbortError") setError(err.message);
       })
@@ -54,6 +66,40 @@ export default function Settings({ user, onDeleted, onOpen }) {
     try {
       await api(`/admin/reports/${id}/resolve`, { method: "POST" });
       setReports((await api("/admin/reports")).reports);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function changeMemberPage(nextPage) {
+    setMemberLoading(true);
+    setError("");
+    try {
+      const data = await api(`/admin/members?page=${nextPage}`);
+      setMembers(data.members);
+      setMemberPage(data.page);
+      setHasMoreMembers(data.hasMore);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setMemberLoading(false);
+    }
+  }
+  async function suspend(member) {
+    if (
+      !window.confirm(
+        `Suspend ${member.alias}? This signs them out, removes memberships, and cancels their upcoming hosted groups.`,
+      )
+    )
+      return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`/admin/members/${member.id}/suspend`, { method: "POST" });
+      const memberData = await api(`/admin/members?page=${memberPage}`);
+      setMembers(memberData.members);
+      setHasMoreMembers(memberData.hasMore);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -147,6 +193,65 @@ export default function Settings({ user, onDeleted, onOpen }) {
                 </p>
               </div>
             )}
+            <h3 className="subheading">Community members</h3>
+            <p className="fine">
+              Moderate by public alias. Administrators cannot be suspended here.
+            </p>
+            {loading ? (
+              <p role="status">Loading members…</p>
+            ) : (
+              <ul className="moderator-members">
+                {members.map((member) => (
+                  <li key={member.id}>
+                    <div>
+                      <strong>{member.alias}</strong>
+                      <span className="fine">
+                        {member.suspended
+                          ? "Suspended"
+                          : member.role === "admin"
+                            ? "Administrator"
+                            : "Member"}
+                      </span>
+                    </div>
+                    <button
+                      className="text-button danger"
+                      disabled={
+                        busy ||
+                        memberLoading ||
+                        member.suspended ||
+                        member.role === "admin" ||
+                        member.id === user.id
+                      }
+                      onClick={() => suspend(member)}
+                    >
+                      {member.suspended ? "Suspended" : "Suspend"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div
+              className="member-pagination"
+              aria-label="Community member pages"
+            >
+              <button
+                className="text-button"
+                disabled={loading || memberLoading || busy || memberPage === 1}
+                onClick={() => changeMemberPage(memberPage - 1)}
+              >
+                ← Previous members
+              </button>
+              <span className="fine" role="status">
+                {memberLoading ? "Loading page…" : `Page ${memberPage}`}
+              </span>
+              <button
+                className="text-button"
+                disabled={loading || memberLoading || busy || !hasMoreMembers}
+                onClick={() => changeMemberPage(memberPage + 1)}
+              >
+                Next members →
+              </button>
+            </div>
             <h3 className="subheading">Reports</h3>
             {loading ? (
               <p role="status">Loading reports…</p>

@@ -190,13 +190,13 @@ export default function Board({ mine, refresh, onOpen, onPost }) {
               className={direction === "to-station" ? "selected" : ""}
               onClick={() => setDirection("to-station")}
             >
-              To Station ↗
+              To Station →
             </button>
             <button
               className={direction === "to-tenx" ? "selected" : ""}
               onClick={() => setDirection("to-tenx")}
             >
-              To TenX ↙
+              To TenX ←
             </button>
           </div>
           <label className="date-filter">
@@ -219,14 +219,23 @@ export default function Board({ mine, refresh, onOpen, onPost }) {
           </button>
         </div>
       )}
-      {loading || loadedFilter !== `${mine}:${direction}:${date}` ? (
+      {loading ||
+      (loadedFilter !== `${mine}:${direction}:${date}` && !error) ? (
         <div className="empty" role="status">
           Checking the departure board…
+        </div>
+      ) : loadedFilter !== `${mine}:${direction}:${date}` ? (
+        <div className="empty">
+          <h3>The board couldn’t load.</h3>
+          <p>Try again when your connection is ready.</p>
+          <button className="button secondary" onClick={() => fetchGroups()}>
+            Try again
+          </button>
         </div>
       ) : !groups.length ? (
         <div className="empty">
           <span className="empty-symbol" aria-hidden="true">
-            ↗
+            →
           </span>
           <h3>
             {mine
