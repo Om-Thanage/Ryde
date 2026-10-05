@@ -1,54 +1,49 @@
-const express = require("express");
-const dotenv = require("dotenv");
-dotenv.config();
-
-const { app, server } = require("./lib/socket");
-const port = 3000;
-const cors = require("cors");
-const connectDB = require("./config/mongodb");
-const schedulerService = require("./services/schedulerService");
-
-// Routes
-const userRoutes = require("./routes/userRoutes");
-const driverRoutes = require("./routes/driverRoutes");
-const tripRoutes = require("./routes/tripRoutes");
-const rideRequestRoutes = require("./routes/rideRequestRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const vehicleRoutes = require("./routes/vehicleRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
-const messageRoutes = require("./routes/messageRoutes");
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-connectDB();
-schedulerService.init(); // Initialize recurring ride scheduler
-
-// Mount Routes
-app.use("/api/users", userRoutes);
-app.use("/api/drivers", driverRoutes);
-app.use("/api/trips", tripRoutes);
-app.use("/api/requests", rideRequestRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/messages", messageRoutes);
-
-app.get("/", (req, res) => {
-  res.json({ message: "Hello World!" });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res
-    .status(500)
-    .json({ message: "Internal Server Error", error: err.message });
-});
-
-server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+require("dotenv").config();
+const mongoose = require("mongoose");
+const { createApp } = require("./app");
+let server;
+async function start() {
+  if (process.env.NODE_ENV === "production") {
+    if (
+      !process.env.MONGO_URI ||
+      !process.env.APP_ORIGIN ||
+      !/^https:\/\/[^/]+$/.test(process.env.APP_ORIGIN)
+    )
+      throw new Error(
+        "Production requires MONGO_URI and an HTTPS APP_ORIGIN with no trailing slash.",
+      );
+    if (
+      process.env.TRUST_PROXY_HOPS &&
+      !/^[1-5]$/.test(process.env.TRUST_PROXY_HOPS)
+    )
+      throw new Error(
+        "TRUST_PROXY_HOPS must be an exact proxy count from 1 to 5.",
+      );
+  }
+  await mongoose.connect(
+    process.env.MONGO_URI || "mongodb://127.0.0.1:27017/tenx",
+    { serverSelectionTimeoutMS: 10000 },
+  );
+  await Promise.all(
+    Object.values(require("./models")).map((model) => model.init()),
+  );
+  server = createApp().listen(Number(process.env.PORT || 3000), "0.0.0.0", () =>
+    console.log(`TenX API listening on port ${process.env.PORT || 3000}`),
+  );
+}
+let stopping = false;
+async function shutdown() {
+  if (stopping) return;
+  stopping = true;
+  const timeout = setTimeout(() => process.exit(1), 10000);
+  timeout.unref();
+  if (server) await new Promise((resolve) => server.close(resolve));
+  await mongoose.disconnect();
+  clearTimeout(timeout);
+}
+process.on("SIGTERM", () => shutdown().then(() => process.exit(0)));
+process.on("SIGINT", () => shutdown().then(() => process.exit(0)));
+start().catch((error) => {
+  console.error("Startup failed:", error.message);
+  mongoose.disconnect().finally(() => process.exit(1));
 });
