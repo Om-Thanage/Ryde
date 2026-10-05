@@ -108,7 +108,7 @@ router.post("/admin/members/:id/suspend", async (req, res) => {
     const user = await User.findOneAndUpdate(
       { _id: req.params.id, role: { $ne: "admin" } },
       { $set: { suspended: true } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!user) fail("Member not found or is an administrator.", 404);
     await removeParticipation(user._id);

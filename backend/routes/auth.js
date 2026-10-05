@@ -40,7 +40,7 @@ router.post("/register", authLimit, async (req, res) => {
       expiresAt: { $gt: new Date() },
     },
     { $set: { usedAt: new Date() } },
-    { new: true },
+    { returnDocument: 'after' },
   );
   if (!invite) s.fail("Registration details or invitation are unavailable.");
   let user;

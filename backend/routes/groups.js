@@ -172,7 +172,7 @@ router.post("/:id/join", async (req, res) => {
       $expr: { $lt: [{ $size: "$memberIds" }, 3] },
     },
     { $addToSet: { memberIds: req.user._id } },
-    { new: true },
+    { returnDocument: 'after' },
   ).lean();
   if (!group) {
     const existing = await getGroup(req.params.id);
@@ -208,7 +208,7 @@ router.post("/:id/cancel", async (req, res) => {
   const updated = await Group.findByIdAndUpdate(
     group._id,
     { $set: { status: "cancelled" } },
-    { new: true },
+    { returnDocument: 'after' },
   ).lean();
   res.json({ group: projection(updated, req.user) });
 });
