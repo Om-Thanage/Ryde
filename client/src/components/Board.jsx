@@ -122,21 +122,22 @@ export default function Board({ mine, refresh, onOpen, onPost }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
   const fetchGroups = useCallback(
-    async (signal) => {
-      setError("");
-      try {
-        const result = await api(
-          mine ? "/groups/mine" : `/groups?direction=${direction}&date=${date}`,
-          { signal },
-        );
-        setGroups(result.groups);
-        setLoadedFilter(`${mine}:${direction}:${date}`);
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err.message);
-      } finally {
-        if (!signal?.aborted) setLoading(false);
-      }
-    },
+    (signal) =>
+      api(
+        mine ? "/groups/mine" : `/groups?direction=${direction}&date=${date}`,
+        { signal },
+      )
+        .then((result) => {
+          setError("");
+          setGroups(result.groups);
+          setLoadedFilter(`${mine}:${direction}:${date}`);
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") setError(err.message);
+        })
+        .finally(() => {
+          if (!signal?.aborted) setLoading(false);
+        }),
     [mine, direction, date],
   );
   useEffect(() => {
@@ -188,13 +189,19 @@ export default function Board({ mine, refresh, onOpen, onPost }) {
           <div className="segmented">
             <button
               className={direction === "to-station" ? "selected" : ""}
-              onClick={() => setDirection("to-station")}
+              onClick={() => {
+                setError("");
+                setDirection("to-station");
+              }}
             >
               To Station →
             </button>
             <button
               className={direction === "to-tenx" ? "selected" : ""}
-              onClick={() => setDirection("to-tenx")}
+              onClick={() => {
+                setError("");
+                setDirection("to-tenx");
+              }}
             >
               To TenX ←
             </button>
@@ -204,7 +211,10 @@ export default function Board({ mine, refresh, onOpen, onPost }) {
             <input
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value || indiaDate())}
+              onChange={(e) => {
+                setError("");
+                setDate(e.target.value || indiaDate());
+              }}
               min={indiaDate()}
             />
           </label>

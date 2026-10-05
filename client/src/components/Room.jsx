@@ -3,19 +3,22 @@ import { api } from "../api";
 import { directions, points, timeLabel, dateLabel } from "../data";
 export default function Room({ id, onBack, onChanged, isAdmin }) {
   const [room, setRoom] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState("");
   const [notice, setNotice] = useState("");
   const [confirm, setConfirm] = useState(false);
   const load = useCallback(
-    async (signal) => {
-      try {
-        setRoom(await api(`/groups/${id}`, { signal }));
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err.message);
-      }
-    },
+    (signal) =>
+      api(`/groups/${id}`, { signal })
+        .then((result) => {
+          setRoom(result);
+          setNow(Date.now());
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") setError(err.message);
+        }),
     [id],
   );
   useEffect(() => {
@@ -78,8 +81,7 @@ export default function Room({ id, onBack, onChanged, isAdmin }) {
   const { group, members = [], messages = [] } = room;
   const active =
     group.status === "active" &&
-    new Date(group.departureAt).getTime() + group.windowMinutes * 60000 >
-      Date.now();
+    new Date(group.departureAt).getTime() + group.windowMinutes * 60000 > now;
   return (
     <section>
       <button className="text-button back" onClick={onBack}>
