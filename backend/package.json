@@ -1,6 +1,23 @@
 {
-  "name": "tenx-together-api", "version": "1.0.0", "private": true, "type": "commonjs",
-  "scripts": {"start":"node server.js", "dev":"node --watch server.js", "bootstrap":"node scripts/bootstrap.js", "test":"node --test test/*.test.js"},
-  "engines":{"node":">=22"},
-  "dependencies":{"dotenv":"^17.2.3","express":"^5.2.1","mongoose":"^9.0.1","helmet":"^8.1.0","express-rate-limit":"^8.2.1"}
+  "name": "tenx-together-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "bootstrap": "node scripts/bootstrap.js",
+    "test": "node --test test/*.test.js",
+    "recover": "node scripts/reset-password.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.0.1",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.2.1"
+  }
 }

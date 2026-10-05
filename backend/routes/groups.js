@@ -95,6 +95,8 @@ router.post("/", async (req, res) => {
   body(req, ["direction", "departureAt", "windowMinutes", "meetingPoint"]);
   const { direction, departureAt, windowMinutes, meetingPoint } = req.body;
   if (
+    typeof direction !== "string" ||
+    typeof meetingPoint !== "string" ||
     !Object.hasOwn(points, direction) ||
     !points[direction].includes(meetingPoint) ||
     ![5, 10, 15].includes(windowMinutes) ||

@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 const mongoose = require("mongoose");
 const { createApp } = require("./app");
 let server;
@@ -44,6 +44,9 @@ async function shutdown() {
 process.on("SIGTERM", () => shutdown().then(() => process.exit(0)));
 process.on("SIGINT", () => shutdown().then(() => process.exit(0)));
 start().catch((error) => {
-  console.error("Startup failed:", error.message);
+  console.error(
+    "Startup failed:",
+    error.name === "Error" ? error.message : error.name,
+  );
   mongoose.disconnect().finally(() => process.exit(1));
 });

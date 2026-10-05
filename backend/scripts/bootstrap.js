@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 const mongoose = require("mongoose");
 const crypto = require("node:crypto");
 const { User, Invite } = require("../models");
@@ -40,7 +40,7 @@ const { passwordHash, digest } = require("../lib/security");
   );
 })()
   .catch((error) => {
-    console.error(error.message);
+    console.error(error.name === "Error" ? error.message : error.name);
     process.exitCode = 1;
   })
   .finally(() => mongoose.disconnect());

@@ -43,8 +43,11 @@ before(async () => {
 after(async () => {
   if (!uri) return;
   if (server) await new Promise((resolve) => server.close(resolve));
-  await mongoose.connection.dropDatabase();
-  await mongoose.disconnect();
+  try {
+    await mongoose.connection.dropDatabase();
+  } finally {
+    await mongoose.disconnect();
+  }
 });
 async function call(
   path,
@@ -272,6 +275,20 @@ test(
           ).status,
           200,
         );
+        const directory = await call("/admin/members", {
+          account: accounts[0],
+        });
+        assert.equal(directory.status, 200);
+        assert.deepEqual(Object.keys(directory.data.members[0]).sort(), [
+          "alias",
+          "id",
+          "role",
+          "suspended",
+        ]);
+        assert.equal(
+          (await call("/admin/members", { account: accounts[2] })).status,
+          403,
+        );
         const report = (await call("/admin/reports", { account: accounts[0] }))
           .data.reports[0];
         assert.equal(report.reporterAlias, "Member 2");
@@ -354,6 +371,81 @@ test(
         assert.equal(
           (await Group.findById(group.id)).hostAlias,
           "Deleted member",
+        );
+      },
+    );
+    await t.test(
+      "moderator directory pagination reaches every member with no private fields",
+      async () => {
+        await User.insertMany(
+          Array.from({ length: 101 }, (_, i) => ({
+            alias: `Pagination ${String(i).padStart(3, "0")}`,
+            email: `page${i}@example.test`,
+            passwordHash: hash,
+          })),
+        );
+        const first = await call("/admin/members?page=1", {
+          account: accounts[0],
+        });
+        const second = await call("/admin/members?page=2", {
+          account: accounts[0],
+        });
+        assert.equal(first.data.page, 1);
+        assert.equal(first.data.members.length, 100);
+        assert.equal(first.data.hasMore, true);
+        assert.equal(second.data.page, 2);
+        assert.equal(second.data.hasMore, false);
+        const ids = [...first.data.members, ...second.data.members].map(
+          (user) => user.id,
+        );
+        assert.equal(new Set(ids).size, await User.countDocuments());
+        for (const user of [...first.data.members, ...second.data.members])
+          assert.deepEqual(Object.keys(user).sort(), [
+            "alias",
+            "id",
+            "role",
+            "suspended",
+          ]);
+        assert.equal(
+          (await call("/admin/members?page=0", { account: accounts[0] }))
+            .status,
+          400,
+        );
+      },
+    );
+    await t.test(
+      "operator recovery revokes sessions and accepts only the new password",
+      async () => {
+        const account = accounts[3];
+        const { resetPassword } = require("../scripts/reset-password");
+        await resetPassword(
+          "member3@example.test",
+          "the new recovery password",
+        );
+        assert.equal((await call("/groups", { account })).status, 401);
+        assert.equal(
+          (
+            await call("/auth/login", {
+              method: "POST",
+              body: {
+                email: "member3@example.test",
+                password: "test password with twelve chars",
+              },
+            })
+          ).status,
+          401,
+        );
+        assert.equal(
+          (
+            await call("/auth/login", {
+              method: "POST",
+              body: {
+                email: "member3@example.test",
+                password: "the new recovery password",
+              },
+            })
+          ).status,
+          200,
         );
       },
     );

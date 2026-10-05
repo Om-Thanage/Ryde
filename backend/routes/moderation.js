@@ -32,18 +32,32 @@ router.post("/reports", async (req, res) => {
 });
 router.use("/admin", admin);
 router.get("/admin/members", async (req, res) => {
+  const raw = req.query.page === undefined ? "1" : req.query.page;
+  if (
+    typeof raw !== "string" ||
+    !/^\d{1,5}$/.test(raw) ||
+    Number(raw) < 1 ||
+    Number(raw) > 10000
+  )
+    fail("Invalid page.");
+  const page = Number(raw);
   const members = await User.find({})
     .select("_id alias role suspended")
-    .sort({ alias: 1 })
-    .limit(100)
+    .sort({ alias: 1, _id: 1 })
+    .skip((page - 1) * 100)
+    .limit(101)
     .lean();
   res.json({
-    members: members.map((user) => ({
-      id: String(user._id),
-      alias: user.alias,
-      role: user.role,
-      suspended: user.suspended,
-    })),
+    members: members
+      .slice(0, 100)
+      .map((user) => ({
+        id: String(user._id),
+        alias: user.alias,
+        role: user.role,
+        suspended: user.suspended,
+      })),
+    page,
+    hasMore: members.length > 100,
   });
 });
 router.get("/admin/reports", async (req, res) => {

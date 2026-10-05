@@ -37,10 +37,22 @@ function createApp() {
     "/api",
     rateLimit({
       windowMs: 60000,
-      limit: 240,
+      limit: 2400,
+      skip: (req) => !["GET", "HEAD", "OPTIONS"].includes(req.method),
       standardHeaders: "draft-8",
       legacyHeaders: false,
       message: { error: "Too many requests. Try again shortly." },
+    }),
+  );
+  app.use(
+    "/api",
+    rateLimit({
+      windowMs: 60000,
+      limit: 60,
+      skip: (req) => ["GET", "HEAD", "OPTIONS"].includes(req.method),
+      standardHeaders: "draft-8",
+      legacyHeaders: false,
+      message: { error: "Too many changes. Try again shortly." },
     }),
   );
   app.use("/api", identify);
