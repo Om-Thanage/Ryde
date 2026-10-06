@@ -7,8 +7,9 @@
     "dev": "bash scripts/dev.sh",
     "test:e2e": "playwright test",
     "test:backend": "node scripts/test-backend.cjs",
-    "check": "npm --prefix client run lint && npm --prefix client run build && npm run test:backend && npm run test:e2e",
-    "build:cloud": "node scripts/build-cloud.mjs"
+    "check": "npm run test:map && npm --prefix client run lint && npm --prefix client run build && npm run test:backend && npm run test:e2e",
+    "build:cloud": "node scripts/build-cloud.mjs",
+    "test:map": "node --test tests/unit/locality-map.test.mjs"
   },
   "engines": {
     "node": ">=24 <25"

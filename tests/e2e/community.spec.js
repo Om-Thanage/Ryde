@@ -111,9 +111,9 @@ test('neighbours create, join, privately coordinate and leave a departure', asyn
     expect((await second.request.get(`/api/groups/${group.id}/messages`)).status()).toBe(403);
     await second.getByLabel('Departure date').fill(date);
     await second.locator('.departure').filter({hasText:host.alias}).getByRole('button',{name:'Join group →',exact:true}).click();
-    await expect(second.getByRole('heading',{name:'To Thane West Station.'})).toBeVisible();
+    await expect(second.getByRole('heading',{name:'To Thane Railway Station.'})).toBeVisible();
     await card.getByRole('button',{name:'Open group →',exact:true}).click();
-    await expect(page.getByRole('heading',{name:'To Thane West Station.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'To Thane Railway Station.'})).toBeVisible();
     await page.getByLabel('Message your group').fill('At the public stand, wearing a blue cap.');
     await page.getByRole('button',{name:'Send →',exact:true}).click();
     await expect(second.getByText('At the public stand, wearing a blue cap.',{exact:true})).toBeVisible();
