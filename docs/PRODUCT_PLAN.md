@@ -54,17 +54,13 @@ These pages could not be retrieved from this environment: the network proxy retu
 
 Every interactive control needs a keyboard-visible focus state, a descriptive label and adequate contrast. Errors must remain visible beside the relevant action. Avoid layout shifts while loading. Respect reduced-motion preferences. Test a 360px-wide viewport and 200% zoom, not just a desktop screenshot.
 
-## Map decision: clarify Proton versus Protomaps
+## Map decision: Protomaps, restricted to the community locality
 
-The request says “Proton maps.” A verified Proton map service has not been identified in this session. [Protomaps](https://protomaps.com/) is the likely intended alternative; confirm the name before introducing a provider. [Proton's official site](https://proton.me/) is a reference for clarification, not evidence that a map product exists.
+The user confirmed [Protomaps](https://protomaps.com/) and requested coverage only around **Thane Railway Station** and **Raymond TenX Habitat**. Use MapLibre to render a self-hosted regional PMTiles extract, with self-hosted glyphs and sprites. Keep the view optional and lazy-loaded, constrain panning/zoom to a small validated bounding rectangle, show only the two community landmark markers, and request no location permission or address search.
 
-For two fixed endpoints, the recommended first release uses an inline route schematic and named public meeting points. The product does not need search, geocoding, routing, location permission or a third-party tile request to coordinate departures. A schematic must never be presented as a geographically accurate map.
+The schematic remains available before opening the geographic reference. It must stay explicitly labelled as a schematic. The locality map is also a reference, not route guidance or evidence of a confirmed pickup gate. A small geographic rectangle necessarily includes the intervening streets; it does not create additional departure destinations.
 
-If a geographic map proves useful later, evaluate [MapLibre GL JS](https://maplibre.org/) as the renderer and [Protomaps documentation](https://docs.protomaps.com/) for tiles/PMTiles. A renderer is not a tile provider or route service. Self-hosting regional tiles can reduce third-party exposure but adds hosting, bandwidth, updates, licensing/attribution and HTTP range-request requirements. A hosted provider still sees request metadata such as IP address; do not describe it as anonymous by default. Keep the map optional, lazy-loaded and configured through a public style/tile URL. Validate endpoint coordinates with the community before displaying markers.
-
-Other candidates are a small Leaflet-based map with a suitable licensed provider, or an external map link that the user deliberately opens. Neither is necessary for the initial workflow. Do not use the public OpenStreetMap tile servers as an unlimited production CDN; assess provider usage policies before deployment.
-
-Official map sites also returned proxy connection HTTP 403 during this planning pass. Provider-specific deployment claims must be checked against the current official documentation before implementation.
+Official Protomaps documentation was inspected from its GitHub source. Direct map download and geocoding sites remain blocked by the cloud network allowlist. No endpoint coordinates or locality tiles have been fabricated. See [LOCALITY_MAP.md](LOCALITY_MAP.md) for the asset contract, provenance and outstanding provisioning checks.
 
 ## Technical delivery sequence
 

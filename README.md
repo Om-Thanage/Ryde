@@ -14,7 +14,7 @@ The rebuilt application replaces the previous driver/vehicle marketplace. Clerk,
 - Authenticated Docker MongoDB with persistent storage and a least-privilege application user; Atlas uses the same connection setting.
 - Responsive client, accessible controls, honest empty states and a two-stop route schematic.
 
-The schematic is explicitly **not navigation** and sends no requests to map providers. “Proton Maps” could not be identified; Protomaps is a possible intended name. For this fixed route, a provider-free schematic is the privacy-preserving default. [The plan](docs/PRODUCT_PLAN.md) records MapLibre/Protomaps options and the research limitations. Exact meetup instructions must be confirmed by the community before launch.
+The schematic is explicitly **not navigation** and sends no requests to map providers. The optional geographic map uses **Protomaps + MapLibre**, limited to Thane Railway Station and Raymond TenX Habitat. Its tiles, fonts and icons are served by this app; it requests no device location. The local tile extract and verified landmark manifest still need provisioning because the cloud network blocks the download/geocoding sites. Until those files exist, opening the map shows an explicit unavailable state. [Local map provisioning](docs/LOCALITY_MAP.md) documents the remaining work. Exact meetup instructions must be confirmed by the community before launch.
 
 ## Local development
 
@@ -130,4 +130,4 @@ The command resets the password and revokes every session. Restart the API after
 
 Choose the hosting domain and TLS proxy, bootstrap an administrator, confirm meeting points and permitted auto capacity, and establish an abuse-response contact/process. Perform an encrypted backup and restore drill, decide backup retention, test the actual deployment's Atlas/local database connectivity, and review the deployed origin/rate-limit settings. These operational steps require your community and deployment details and are not claimed as completed by a local test run.
 
-Notifications, recurring schedules, train-time feeds, car-driver matching and geographic maps are not part of this release. In-app coordination polls while the page is visible; it does not promise background notification delivery.
+Notifications, recurring schedules, train-time feeds and car-driver matching are not part of this release. The geographic map is optional and requires the provisioned local dataset described above. In-app coordination polls while the page is visible; it does not promise background notification delivery.
