@@ -1,57 +1,83 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { api } from "./api";
 import Auth from "./components/Auth";
 import Board, { PostGroup } from "./components/Board";
 import Room from "./components/Room";
 import Settings from "./components/Settings";
 
+const LocalityMap = lazy(() => import("./components/LocalityMap"));
+
 function RouteIllustration({ compact = false }) {
+  const [mapOpen, setMapOpen] = useState(false);
+  if (mapOpen)
+    return (
+      <Suspense
+        fallback={
+          <div className="panel" role="status">
+            Opening the locality map…
+          </div>
+        }
+      >
+        <LocalityMap onClose={() => setMapOpen(false)} />
+      </Suspense>
+    );
   return (
-    <div
-      className={`route-art ${compact ? "compact" : ""}`}
-      aria-label="Route schematic between TenX Raymond and Thane West Station. Not a navigation map."
-    >
-      <div className="route-art-top">
-        <span className="eyebrow">ONE COMMUNITY. TWO STOPS.</span>
-        <span className="route-arrow" aria-hidden="true">
-          →
-        </span>
-      </div>
-      <div className="route-stop stop-home">
-        <span className="stop-dot" />
-        <div>
-          <span className="stop-number">01 / HOME</span>
-          <h3>
-            TenX
-            <br />
-            Raymond
-          </h3>
-          <p>
-            Your neighbourhood.
-            <br />
-            Your starting point.
-          </p>
+    <div className="route-reference">
+      <div
+        className={`route-art ${compact ? "compact" : ""}`}
+        aria-label="Route schematic between Raymond TenX Habitat and Thane Railway Station. Not a navigation map."
+      >
+        <div className="route-art-top">
+          <span className="eyebrow">ONE COMMUNITY. TWO STOPS.</span>
+          <span className="route-arrow" aria-hidden="true">
+            →
+          </span>
+        </div>
+        <div className="route-stop stop-home">
+          <span className="stop-dot" />
+          <div>
+            <span className="stop-number">01 / HOME</span>
+            <h3>
+              Raymond
+              <br />
+              TenX Habitat
+            </h3>
+            <p>
+              Your neighbourhood.
+              <br />
+              Your starting point.
+            </p>
+          </div>
+        </div>
+        <div className="route-line" aria-hidden="true" />
+        <div className="route-stop stop-station">
+          <span className="stop-dot" />
+          <div>
+            <span className="stop-number">02 / THE CITY AWAITS</span>
+            <h3>
+              Thane
+              <br />
+              Railway Station
+            </h3>
+            <p>
+              The next train.
+              <br />A shared last mile.
+            </p>
+          </div>
+        </div>
+        <div className="route-caption">
+          Route schematic · not for navigation<span aria-hidden="true">↔</span>
         </div>
       </div>
-      <div className="route-line" aria-hidden="true" />
-      <div className="route-stop stop-station">
-        <span className="stop-dot" />
-        <div>
-          <span className="stop-number">02 / THE CITY AWAITS</span>
-          <h3>
-            Thane West
-            <br />
-            Station
-          </h3>
-          <p>
-            The next train.
-            <br />A shared last mile.
-          </p>
-        </div>
-      </div>
-      <div className="route-caption">
-        Route schematic · not for navigation<span aria-hidden="true">↔</span>
-      </div>
+      <button
+        className="text-button locality-map-toggle"
+        onClick={() => setMapOpen(true)}
+      >
+        View locality map <span aria-hidden="true">→</span>
+      </button>
+      <p className="fine locality-map-toggle-note">
+        Self-hosted Protomaps · no location access
+      </p>
     </div>
   );
 }
@@ -81,7 +107,8 @@ function Landing({ onLogin }) {
             Find your people <span>→</span>
           </a>
           <div className="hero-footnote">
-            <span aria-hidden="true">↔</span> TenX Raymond & Thane West Station
+            <span aria-hidden="true">↔</span> Raymond TenX Habitat & Thane
+            Railway Station
           </div>
         </div>
         <RouteIllustration />
@@ -232,7 +259,9 @@ export default function App() {
             </>
           ) : (
             <>
-              <span className="header-route">THANE WEST ⇄ TENX RAYMOND</span>
+              <span className="header-route">
+                THANE RAILWAY STATION ⇄ RAYMOND TENX HABITAT
+              </span>
               <a className="button secondary small" href="#community">
                 Join your neighbours →
               </a>

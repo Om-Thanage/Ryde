@@ -5,8 +5,8 @@ export const points = {
   "station-west-exit": "Station West exit",
 };
 export const directions = {
-  "to-station": "Thane West Station",
-  "to-tenx": "TenX Raymond",
+  "to-station": "Thane Railway Station",
+  "to-tenx": "Raymond TenX Habitat",
 };
 export const meetingOptions = {
   "to-station": ["tenx-main-gate", "tenx-auto-stand"],
